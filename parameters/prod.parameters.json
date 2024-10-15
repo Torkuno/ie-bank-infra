@@ -1,0 +1,27 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "environmentType": {
+            "value": "nonprod"
+        },
+        "postgreSQLServerName": {
+            "value": "tmesalles-dbsrv-prod"
+        },
+        "postgreSQLDatabaseName": {
+            "value": "tmesalles-db-prod"
+        },
+        "appServicePlanName": {
+            "value": "tmesalles-asp-prod"
+        },
+        "appServiceAPIAppName": {
+            "value": "tmesalles-be-prod"
+        },
+        "appServiceAppName": {
+            "value": "tmesalles-fe-prod"
+        },
+        "location": {
+            "value": "North Europe"
+        }
+    }
+}
