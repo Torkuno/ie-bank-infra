@@ -3,15 +3,17 @@ name: ie-bank-infra
 on:
   workflow_dispatch:
   push:
-    paths:
+    branches:
+      - '*'
+    paths-ignore:
       - '!scripts/**'
   pull_request:
-    paths:
-      - '!scripts/**'
+    branches:
+      - main
 
 env:
   RESOURCE_GROUP_DEV: BCSAI2024-DEVOPS-STUDENTS-B-DEV
-  # RESOURCE_GROUP_UAT: BCSAI2024-DEVOPS-STUDENTS-B-UAT
+  RESOURCE_GROUP_UAT: BCSAI2024-DEVOPS-STUDENTS-B-UAT
   SUBSCRIPTION_ID_DEV: e0b9cada-61bc-4b5a-bd7a-52c606726b3b
   USER_ALIAS: tmesalles
 
@@ -34,7 +36,7 @@ jobs:
         path: ./main.bicep
 
   deploy-dev:
-#   if: github.ref == 'refs/heads/dev'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     needs: build
     environment:
@@ -60,29 +62,29 @@ jobs:
         parameters: ./parameters/dev.parameters.json appServiceAPIEnvVarENV=${{ vars.ENV }} appServiceAPIEnvVarDBHOST=${{ vars.DBHOST }} appServiceAPIEnvVarDBNAME=${{ vars.DBNAME }} appServiceAPIEnvVarDBPASS=${{ secrets.DBPASS }} appServiceAPIDBHostDBUSER=${{ secrets.DBUSER }} appServiceAPIDBHostFLASK_APP=${{ vars.FLASK_APP }} appServiceAPIDBHostFLASK_DEBUG=${{ vars.FLASK_DEBUG }}
         deploymentName: ${{ env.USER_ALIAS }}
 
-  # deploy-uat  :
-  #   if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-  #   runs-on: ubuntu-latest
-  #   needs: build
-  #   environment:
-  #     name: 'UAT'
-  #
-  #   steps:
-  #   - uses: actions/checkout@v3
-  #   - name: Download Bicep build artifact
-  #     uses: actions/download-artifact@v4
-  #     with:
-  #       name: bicep-build
-  #
-  #   - uses: azure/login@v2
-  #     with:
-  #       creds: ${{ secrets.AZURE_CREDENTIALS }}
-  #
-  #   - name: Deploy to uat
-  #     uses: azure/arm-deploy@v2
-  #     with:
-  #       subscriptionId: ${{ env.SUBSCRIPTION_ID_DEV }}
-  #       resourceGroupName: ${{ env.RESOURCE_GROUP_UAT }}
-  #       template: ./main.bicep
-  #       parameters: ./parameters/uat.parameters.json appServiceAPIEnvVarENV=${{ vars.ENV }} appServiceAPIEnvVarDBHOST=${{ vars.DBHOST }} appServiceAPIEnvVarDBNAME=${{ vars.DBNAME }} appServiceAPIEnvVarDBPASS=${{ secrets.DBPASS }} appServiceAPIDBHostDBUSER=${{ secrets.DBUSER }} appServiceAPIDBHostFLASK_APP=${{ vars.FLASK_APP }} appServiceAPIDBHostFLASK_DEBUG=${{ vars.FLASK_DEBUG }}
-  #       deploymentName: ${{ env.USER_ALIAS }}-uat
+  deploy-uat:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: 'UAT'
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Download Bicep build artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: bicep-build
+
+    - uses: azure/login@v2
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Deploy to uat
+      uses: azure/arm-deploy@v2
+      with:
+        subscriptionId: ${{ env.SUBSCRIPTION_ID_DEV }}
+        resourceGroupName: ${{ env.RESOURCE_GROUP_UAT }}
+        template: ./main.bicep
+        parameters: ./parameters/uat.parameters.json appServiceAPIEnvVarENV=${{ vars.ENV }} appServiceAPIEnvVarDBHOST=${{ vars.DBHOST }} appServiceAPIEnvVarDBNAME=${{ vars.DBNAME }} appServiceAPIEnvVarDBPASS=${{ secrets.DBPASS }} appServiceAPIDBHostDBUSER=${{ secrets.DBUSER }} appServiceAPIDBHostFLASK_APP=${{ vars.FLASK_APP }} appServiceAPIDBHostFLASK_DEBUG=${{ vars.FLASK_DEBUG }}
+        deploymentName: ${{ env.USER_ALIAS }}-uat
